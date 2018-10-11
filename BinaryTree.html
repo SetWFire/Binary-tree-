@@ -1,0 +1,565 @@
+<meta charset="utf-8" />
+<style>
+	#container{
+		width: 200px;
+		height:200px;
+		position: absolute;
+	}
+	.node{
+		position: absolute;
+		font-size:83px;
+		width: 100px;
+		height:100px;
+		border-radius: 50px;
+		background:#96acfe;
+		text-align: center;
+	}
+	.nodeselect{
+		animation:1s opacity2 0s infinite;
+		-webkit-animation:1s opacity2 0s infinite;
+		 -moz-animation:1s opacity2 0s infinite;
+		position: absolute;
+		font-size:83px;
+		width: 100px;
+		height:100px;
+		border-radius: 50px;
+		background:#96acfe;
+		text-align: center;
+	}
+    @keyframes opacity2{
+        0%{opacity:0.5}
+        50%{opacity:1;}
+        100%{opacity:0.5;}
+    }
+    @-webkit-keyframes opacity2{
+        0%{opacity:0.5}
+        50%{opacity:1;}
+        100%{opacity:0.5;}
+    }
+    @-moz-keyframes opacity2{
+        0%{opacity:0.5}
+        50%{opacity:1;}
+        100%{opacity:0.5;}
+    }
+	hr{
+		margin:0px;
+		border:0px;
+		border-radius: 1.5px;
+		height: 3px;
+		background:#96acfe;
+		position: absolute;
+	}
+	.btncontainer{
+		position: absolute;
+		left:15.5;
+		top:15.5;
+		width:70px;
+		height:70px;
+	}
+	.leftbtn{
+		width: 40px;
+		height: 26px;
+		position: absolute;
+		top:50px;
+		left: -15px;
+	}
+	.rightbtn{
+		width: 40px;
+		height:26px;
+		position: absolute;
+		top: 50px;
+		left: 50px;
+	}
+	.deletebtn{
+		width: 50px;
+		height:28px;
+		position: absolute;
+		top: 0px;
+		left: 44px;
+	}
+	.editbtn{
+		width: 40px;
+		height:45px;
+		position: absolute;
+		top: -10px;
+		left: -10px;
+	}
+	.textvalue{
+		position: absolute;
+		height: 40px;
+		text-align: center;
+		width: 100px;
+		top: 30px;
+		left: 0px;
+		font-size:34px;
+		z-index:10;
+	}
+	.editinput{
+		position: absolute;
+		top:-5px;
+		left:-25px;
+		width: 50px;
+	}
+	.detail{
+		text-align: left;
+		font-size:15px;
+		position: absolute;
+		top: 0px;
+		left: 105px;
+	}
+	.selectdiv{
+		border:
+	}
+</style>
+<div id="container">
+</div>
+<script>
+	document.oncontextmenu = function(e){
+        e.preventDefault();
+   };
+	var Tree = function(){
+		var that=this;
+		this.nodes=[];
+		this.canvas=document.getElementById('container');
+		this.nodeSelected=null;
+		window.onresize=function(){
+            this.canvas.style.left=(window.innerWidth-Number(this.canvas.style.width.split('px')[0]))/2; 
+		}
+		this.createNode=function (x,y){
+			var canvas=document.getElementById('container');
+			var node=document.createElement("div");
+			node.className='node';
+			node.style.left=x.toString()+'px';
+			node.style.top=y.toString()+'px';
+			node.style.zIndex=999;
+			node.x=x+50;
+			node.topy=y;
+			node.bottomy=y+100;
+			node.setLocation=function(x,y){
+				node.style.left=x.toString()+'px';
+				node.style.top=y.toString()+'px';
+				node.style.zIndex=999;
+				node.x=x+50;
+				node.topy=y;
+				node.bottomy=y+100;
+			};
+			node.leftNode=null;
+			node.rightNode=null;
+			node.leftLine=null;
+			node.rightLine=null;
+			node.parentLine=null;
+		  	var btncontainer=document.createElement('div');
+		  	btncontainer.className='btncontainer';
+		  	var leftbtn=new Image();
+		  	leftbtn.src='img/addLeftNode.png';
+		  	leftbtn.className='leftbtn';
+		  	btncontainer.appendChild(leftbtn);
+		  	var rightbtn=new Image();
+		  	rightbtn.className='rightbtn';
+		  	rightbtn.src='img/addRightNode.png';
+		  	btncontainer.appendChild(rightbtn);
+		  	var deletebtn=new Image();
+		  	deletebtn.className='deletebtn';
+		  	deletebtn.src='img/deleteNode.png';
+		  	btncontainer.appendChild(deletebtn);
+		  	var editinput=document.createElement('input');
+		  	editinput.value='0';
+		  	editinput.className='editinput';
+			btncontainer.appendChild(editinput);
+			var detail=document.createElement('pre');
+			detail.className='detail';
+			var textvalue=document.createElement('div');
+			textvalue.innerHTML='0';
+			textvalue.className='textvalue';
+			node.appendChild(textvalue);
+			node.appendChild(detail);
+			node.textvalue=textvalue;
+		  	node.leftbtn=leftbtn;
+		  	node.rightbtn=rightbtn;
+		  	node.deletebtn=deletebtn;
+		  	node.editinput=editinput;
+		  	node.detail=detail;
+		  	node.numvalue=0;
+		  	node.parent=null;
+		  	node.btncontainer=btncontainer;
+		  	btncontainer.style.display='none';
+		  	node.appendChild(btncontainer);
+			return node;
+		};
+		this.createLine = function(node1,node2){
+			var hr = document.createElement('hr');
+			hr.tolength = Math.sqrt((node1.x-node2.x)*(node1.x-node2.x)+(node1.bottomy-node2.topy)*(node1.bottomy-node2.topy));
+			hr.style.width=hr.tolength;
+			hr.centerx=(node1.x+node2.x)/2;
+			hr.centery=(node1.bottomy+node2.topy)/2;
+			hr.style.top=hr.centery+'px';
+			hr.style.left=hr.centerx-hr.tolength/2+'px';
+			var deg=Math.asin((node2.topy-node1.bottomy)/hr.tolength)/Math.PI*180;
+			if(node2.x>node1.x)
+				hr.style.transform="rotate("+deg.toString()+"deg)";
+			else
+				hr.style.transform="rotate(-"+deg.toString()+"deg)";
+			return hr;
+		};
+		this.createLeftNode=function(node){
+			if(node.leftNode!=null)
+				return;
+			node.leftNode=new this.createNode(0,0);
+			node.leftNode.parent=node;
+			this.setLocation();
+			inievent(node.leftNode);
+			this.canvas.appendChild(node.leftNode);
+			this.drawLine();
+			this.setDetail();
+		};
+		this.createRightNode=function(node){
+			if(node.rightNode!=null)
+				return;
+			node.rightNode=new this.createNode(0,0);
+			node.rightNode.parent=node;
+			this.setLocation();
+			inievent(node.rightNode);
+			this.canvas.appendChild(node.rightNode);
+			this.drawLine();
+			this.setDetail();
+		};
+		this.getLevel=function(){
+			return getlevel(this.root);
+		};
+		this.drawLine=function(){
+			drawline(this.root);
+		};
+		function drawline(node){
+			if(node.leftNode!=null)
+			{
+				if(node.leftLine!=null)
+				that.canvas.removeChild(node.leftLine);
+				node.leftLine=new that.createLine(node,node.leftNode);
+				node.leftNode.parentLine=node.leftLine;
+				that.canvas.appendChild(node.leftLine);
+				drawline(node.leftNode);
+			}
+			else if(node.leftLine!=null){
+				that.canvas.removeChild(node.leftLine);
+				node.leftLine=null;
+			}
+			if(node.rightNode!=null)
+			{
+				if(node.rightLine!=null)
+				that.canvas.removeChild(node.rightLine);
+				node.rightLine=new that.createLine(node,node.rightNode);
+				node.rightNode.parentLine=node.rightLine;
+				that.canvas.appendChild(node.rightLine);
+				drawline(node.rightNode);
+			}
+			else if(node.rightLine!=null){
+				that.canvas.removeChild(node.rightLine);
+				node.rightLine=null;
+			}
+		};
+		function getlevel(node){
+			var lnum=0;
+			var rnum=0;
+			var num=1;
+			if(node.leftNode!=null)
+				lnum=getlevel(node.leftNode);
+			if(node.rightNode!=null)
+				rnum=getlevel(node.rightNode);
+			num+=lnum>rnum?lnum:rnum;
+			return num;
+		};
+		this.setLocation=function(){
+			this.canvas.style.width=this.getNum()*100+200;
+			this.canvas.style.height=this.getLevel()*200+200;
+			this.root.setLocation(0,0);
+			setlocation(this.root,this.root.x,this.root.bottomy);
+			this.canvas.style.left=(window.innerWidth-Number(this.canvas.style.width.split('px')[0]))/2; 
+		}
+		function setlocation(node,x,bottomy){
+			var rightx=x;
+			node.setLocation(x-50,bottomy+100);
+			if(node.leftNode!=null)
+				rightx=setlocation(node.leftNode,node.x,node.bottomy);
+			node.setLocation(rightx+50,node.topy);
+			if(node.rightNode!=null)
+			{
+				return setlocation(node.rightNode,node.x,node.bottomy);
+			}
+			else return node.x;
+		};
+		this.getNum=function(){
+			return getnum(this.root);
+		};
+		this.showPath=function(Enode){
+			if(this.nodeSelected==null||this.nodeSelected==Enode)
+				return;
+			function search(node,s){
+				if(node==null)
+					return false;
+				if(node==Enode)
+					return true;
+				if(s!=node.leftNode&&search(node.leftNode,node)){
+					path.push(node.leftNode);
+					lines.push(node.leftLine);
+					return true;
+				}
+				if(s!=node.rightNode&&search(node.rightNode,node)){
+					path.push(node.rightNode);
+					lines.push(node.rightLine);
+					return true;
+				}
+				if(s!=node.parent&&search(node.parent,node)){
+					path.push(node.parent);
+					lines.push(node.parentLine);
+					return true;
+				}
+				return false;
+			};
+			var path=[this.nodeSelected];
+			var lines=[];
+			var Snode=this.nodeSelected;
+			search(Snode,Snode);
+			path.forEach(function(item){
+				item.style.backgroundColor='orange';
+			});
+			lines.forEach(function(item){
+				item.style.backgroundColor='orange';
+			});
+		};
+
+		this.iniEvent=function(){
+			inievent(this.root);
+		};
+		this.deleteNode=function(node){
+		var that=this;
+		var canvas=this.canvas;
+		if(node.parent==null)
+					return;
+		function deleteNode(node){
+			canvas.removeChild(node);
+			if(node.leftNode!=null)
+			{
+				deleteNode(node.leftNode);
+				canvas.removeChild(node.leftLine);
+				node.leftNode=null;
+				node.leftLine=null;
+			}
+			if(node.rightNode!=null)
+			{
+				deleteNode(node.rightNode);
+				canvas.removeChild(node.rightLine);
+				node.rightNode=null;
+				node.rightLine=null;
+			}
+			if(node.parent.leftNode==node)
+				node.parent.leftNode=null;
+			else
+				node.parent.rightNode=null;
+		}
+		deleteNode(node);
+		this.setLocation();
+		this.drawLine();
+		this.setDetail();
+		};
+		function inievent(node){
+			node.onmouseover=function(){
+				node.btncontainer.style.display='block';
+				node.detail.style.display='block';
+				that.showPath(node);
+			};
+			node.onmouseleave=function(){
+				node.btncontainer.style.display='none';
+				if(node.className=='node')
+					node.detail.style.display='none';
+				that.findMaxMin(that.nodeSelected);
+			};
+			node.editinput.onkeyup=function(){
+				node.textvalue.innerHTML=node.editinput.value;
+				node.numvalue=Number(node.editinput.value);
+				that.setDetail();
+				that.findMaxMin(that.nodeSelected);
+			};
+			node.deletebtn.onclick=function(){
+				that.deleteNode(node);
+			};
+			node.leftbtn.onclick=function(e){
+				that.createLeftNode(node);
+				if(node.className!='node')
+				that.findMaxMin(node);
+			};
+			node.rightbtn.onclick=function(e){
+				that.createRightNode(node);
+				if(node.className!='node')
+				that.findMaxMin(node);
+			};
+			node.isselect=function(){
+				if(that.nodeSelected)
+				that.nodeSelected.noselect();
+				that.nodeSelected=node;
+				node.className='nodeselect';
+				node.detail.style.display='block';
+				document.onkeydown=function(e){
+					k=e.keyCode;
+					if(k==46){
+						if(node.parent==null)return;
+						node.parent.isselect();
+						node.deletebtn.click();
+						return;
+					}
+					else if(k==37){
+						node.noselect();
+						that.createLeftNode(node);
+						node.leftNode.isselect();
+						return;
+					}
+					else if(k==38){
+						if(node.parent==null)
+						 	return;
+						node.noselect();
+						node.parent.isselect();
+						return;
+					}
+					else if(k==39){
+						node.noselect();
+						that.createRightNode(node);
+						node.rightNode.isselect();
+						return;
+					}
+					else if(k==109||k==189)
+					{
+						node.numvalue=-node.numvalue;
+						node.textvalue.innerHTML=node.numvalue.toString();
+						node.editinput.value=node.numvalue.toString();
+					}
+					else if(k>=48&&k<=57&&node.btncontainer.style.display=='none')
+					{
+						node.textvalue.innerHTML+=(k-48).toString();
+						node.numvalue=Number(node.textvalue.innerHTML);
+						node.textvalue.innerHTML=node.numvalue;
+						node.editinput.value=node.textvalue.innerHTML;
+					}
+					else if(k>=96&&k<=105&&node.btncontainer.style.display=='none')
+					{
+						node.textvalue.innerHTML+=(k-96).toString();
+						node.numvalue=Number(node.textvalue.innerHTML);
+						node.textvalue.innerHTML=node.numvalue;
+						node.editinput.value=node.textvalue.innerHTML;
+					}
+					else if(k==8&&node.btncontainer.style.display=='none'){
+						if(node.textvalue.innerHTML.length==1)
+						{
+							node.textvalue.innerHTML='0';
+							node.numvalue=0;
+							node.editinput.value=0;
+						}
+						else{node.textvalue.innerHTML=node.textvalue.innerHTML.slice(0,-1);
+						node.numvalue=Number(node.textvalue.innerHTML);
+						node.editinput.value=node.innerHTML;}
+					}
+					that.setDetail();
+					that.findMaxMin(node);
+				}
+				that.findMaxMin(node);
+			};
+			node.noselect=function(){
+				node.className='node';
+				node.detail.style.display='none';
+				that.nodeSelected=null;
+				that.colorBack();
+			};
+			node.textvalue.onclick=function(){
+				if(node.className=='node')
+					node.isselect();
+				else node.noselect();
+			};
+			if(node.leftNode!=null){
+				inievent(node.leftNode);
+			}
+			if(node.rightNode!=null){
+				inievent(node.rightNode);
+			}
+		};
+		this.setDetail=function(){
+			this.nodes=[];
+			setdetail(this.root,0);
+		}
+		this.colorBack=function(){
+			colorback(this.root);
+		}
+		function colorback(node){
+			if(node==null)
+				return;
+			if(node.parentLine!=null)
+			node.parentLine.style.backgroundColor='#96acfe';
+			node.style.backgroundColor='#96acfe';
+			colorback(node.leftNode);
+			colorback(node.rightNode);
+		}
+		this.findMaxMin=function(node){
+			if(node==null)
+				return;
+			this.colorBack();
+			var maxarr=[];
+			var minarr=[];
+			maxarr.push(node);
+			minarr.push(node);
+			function findmaxmin(node){
+			if(node==null)
+				return;
+			if(node.numvalue>maxarr[0].numvalue)
+			{
+				maxarr=[];
+				maxarr.push(node);
+			}
+			else if(node.numvalue==maxarr[0].numvalue)
+			{
+				maxarr.push(node);
+			}
+			if(node.numvalue<minarr[0].numvalue)
+			{
+				minarr=[];
+				minarr.push(node);
+			}
+			else if(node.numvalue==minarr[0].numvalue)
+			{
+				minarr.push(node);
+			}
+			findmaxmin(node.leftNode);
+			findmaxmin(node.rightNode);
+		}
+			findmaxmin(node);
+			for(var k in maxarr)
+				maxarr[k].style.backgroundColor='red';
+			for(var k in minarr)
+				minarr[k].style.backgroundColor='yellow';
+
+		};
+		function setdetail(node,depth){
+			if(node==null)
+				return 0;
+			depth++;
+			that.nodes.push(node);
+			node.detail.innerHTML='Depth:'+depth+'\n';
+			var v1=setdetail(node.leftNode,depth);
+			var v2=setdetail(node.rightNode,depth);
+			var v=node.numvalue+v1+v2;
+			node.detail.innerHTML+='Sum:'+v;
+			return v;
+		}
+		this.root=new this.createNode(0,0);
+		this.setLocation();
+		this.iniEvent();
+		this.setDetail();
+		this.canvas.appendChild(this.root);
+		function getnum(node){
+			var num=1;
+			if(node.rightNode!=null)
+				num+=getnum(node.rightNode);
+			if(node.leftNode!=null)
+				num+=getnum(node.leftNode);
+			return num;
+		};
+	};
+		var canvas=document.getElementById('container');
+		var tree=new Tree();
+</script>
