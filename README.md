@@ -1,4 +1,4 @@
-# Binary-tree-
+# BinaryTree
 Binary tree with GUI written in HTML and JavaScript.
 
 利用初级HTML元素hr、div写成的交互二叉树界面，你可以：
